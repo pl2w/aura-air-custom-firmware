@@ -1,4 +1,5 @@
 #include "Particle.h"
+#include "config.h"
 #include "mqtt/mqtt_handler.h"
 #include "fan/fan.h"
 
@@ -10,10 +11,10 @@ SerialLogHandler logHandler(LOG_LEVEL_INFO);
 void setup() {
     fan_init();
 
-    pinMode(25, OUTPUT);        // uvc led
-    pinMode(28, INPUT_PULLUP);  // cover switch
+    pinMode(PIN_UVC_LED, OUTPUT);
+    pinMode(PIN_COVER_SWITCH, INPUT_PULLUP);
 
-    digitalWrite(25, LOW);      // set uvc led to off
+    digitalWrite(PIN_UVC_LED, LOW);
 
     Wire.begin();               // i2c hdc1080 sgp30
     Serial1.begin(9600);        // zph02 pm2.5

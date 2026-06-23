@@ -1,3 +1,4 @@
+#include "../config.h"
 #include "fan.h"
 
 static int currentSpeed = 255;
@@ -10,11 +11,11 @@ static void tachISR() {
 }
 
 void fan_init() {
-    pinMode(24, OUTPUT);
-    pinMode(27, INPUT_PULLUP);
+    pinMode(PIN_FAN_PWM, OUTPUT);
+    pinMode(PIN_FAN_TACH, INPUT_PULLUP);
 
-    analogWrite(24, 255); // off
-    attachInterrupt(27, tachISR, FALLING);
+    analogWrite(PIN_FAN_PWM, 255); // off
+    attachInterrupt(PIN_FAN_TACH, tachISR, FALLING);
 
     Log.info("Fan initialized");
 }
@@ -24,7 +25,7 @@ void fan_set_speed(int speed) {
     if (speed > 255) speed = 255;
     currentMode = FAN_CUSTOM;
     currentSpeed = speed;
-    analogWrite(24, speed);
+    analogWrite(PIN_FAN_PWM, speed);
     Log.info("Fan custom: PWM=%d", speed);
 }
 
@@ -32,7 +33,7 @@ void fan_set_mode(FanMode mode) {
     if (mode > FAN_CUSTOM) return;
     currentMode = mode;
     currentSpeed = fanModeToPWM(mode);
-    analogWrite(24, currentSpeed);
+    analogWrite(PIN_FAN_PWM, currentSpeed);
     Log.info("Fan mode: %d (PWM=%d)", mode, currentSpeed);
 }
 
