@@ -28,7 +28,9 @@ void loop() {
 
     String topic, payload;
     if (mqtt_get_command(topic, payload)) {
-        if (topic == "aura/fan/set") {
+        if (topic == "aura/fan/mode") {
+            fan_set_mode((FanMode)payload.toInt());
+        } else if (topic == "aura/fan/speed") {
             fan_set_speed(payload.toInt());
         }
     }

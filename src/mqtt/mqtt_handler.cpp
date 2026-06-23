@@ -16,7 +16,8 @@ static void callback(char* topic, byte* payload, unsigned int length) {
 MQTT client("test.mosquitto.org", 1883, callback);
 
 static void on_connected() {
-    client.subscribe("aura/fan/set");
+    client.subscribe("aura/fan/mode");
+    client.subscribe("aura/fan/speed");
     client.subscribe("aura/uvc/set");
     client.publish("aura/status", "online - " + System.deviceID());
     Log.info("MQTT connected");
