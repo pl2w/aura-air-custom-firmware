@@ -1,4 +1,4 @@
-#include "fan.hpp"
+#include "fan.h"
 
 static int currentSpeed = 255;
 
