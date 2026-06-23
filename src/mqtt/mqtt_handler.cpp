@@ -1,4 +1,4 @@
-#include "mqtt_handler.h"
+#include "mqtt_handler.hpp"
 #include "MQTT.h"
 
 static String cmdTopic;

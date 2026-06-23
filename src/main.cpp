@@ -1,6 +1,6 @@
 #include "Particle.h"
-#include "mqtt/mqtt_handler.h"
-#include "fan/fan.h"
+#include "mqtt/mqtt_handler.hpp"
+#include "fan/fan.hpp"
 
 SYSTEM_MODE(AUTOMATIC);
 SYSTEM_THREAD(ENABLED);
