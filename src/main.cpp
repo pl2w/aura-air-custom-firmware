@@ -3,6 +3,7 @@
 #include "sensors/hdc1080.h"
 #include "sensors/sgp30.h"
 #include "sensors/cover.h"
+#include "sensors/me2co.h"
 #include "config.h"
 
 SYSTEM_MODE(AUTOMATIC);
@@ -28,6 +29,8 @@ void setup() {
     if (!sgp30.init()) {
         Log.warn("SGP30 not found");
     }
+
+    me2coInit();
 }
 
 void loop() {
@@ -42,11 +45,12 @@ void loop() {
             sgp30.setHumidity(hdc.humidity, hdc.temperature);
         }
         auto sgp = sgp30.read();
+        auto co  = me2coRead();
         if (hdc.valid && sgp.valid) {
-            Log.info("Fan: %u RPM | %.1f°C %.0f%% RH | %sTVOC %u eCO2 %u | Cover: %s",
+            Log.info("Fan: %u RPM | %.1f°C %.0f%% RH | %sTVOC %u eCO2 %u | CO %.2fV | Cover: %s",
                 fan.getRPM(), hdc.temperature, hdc.humidity,
                 sgp30.isWarmedUp() ? "" : "(warming) ",
-                sgp.tvoc, sgp.eco2,
+                sgp.tvoc, sgp.eco2, co.voltage,
                 cover.closed ? "closed" : "OPEN");
         } else if (hdc.valid) {
             Log.info("Fan: %u RPM | %.1f°C %.0f%% RH | Cover: %s",
