@@ -1,44 +1,45 @@
 #include "Particle.h"
-#include "config.h"
-#include "mqtt/mqtt_handler.h"
 #include "fan/fan.h"
+#include "sensors/hdc1080.h"
+#include "sensors/cover.h"
 
 SYSTEM_MODE(AUTOMATIC);
 SYSTEM_THREAD(ENABLED);
 
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
+Fan fan;
+
 void setup() {
-    fan_init();
+    fan.init();
+    coverInit();
 
-    pinMode(PIN_UVC_LED, OUTPUT);
-    pinMode(PIN_COVER_SWITCH, INPUT_PULLUP);
-
-    digitalWrite(PIN_UVC_LED, LOW);
-
-    Wire.begin();               // i2c hdc1080 sgp30
-    Serial1.begin(9600);        // zph02 pm2.5
-
-    waitUntil(WiFi.ready);
-
-    mqtt_init();
+    if (hdc1080Init()) {
+        Log.info("HDC1080 connected");
+    } else {
+        Log.warn("HDC1080 not found");
+    }
 }
 
 void loop() {
-    mqtt_loop();
+    auto cover = coverRead();
+    fan.setEnabled(cover.closed);
+    fan.tick();
 
-    String topic, payload;
-    if (mqtt_get_command(topic, payload)) {
-        if (topic == "aura/fan/mode") {
-            fan_set_mode((FanMode)payload.toInt());
-        } else if (topic == "aura/fan/speed") {
-            fan_set_speed(payload.toInt());
+    static unsigned long lastLog = 0;
+    if (millis() - lastLog >= 5000) {
+        lastLog = millis();
+
+        auto hdc = hdc1080Read();
+
+        if (hdc.valid) {
+            Log.info("Fan: %u RPM | %.1f°C %.0f%% RH | Cover: %s",
+                fan.getRPM(), hdc.temperature, hdc.humidity,
+                cover.closed ? "closed" : "OPEN");
+        } else {
+            Log.warn("HDC1080 read failed");
         }
     }
 
-    static unsigned long lastRpm = 0;
-    if (millis() - lastRpm > 5000) {
-        lastRpm = millis();
-        mqtt_publish_status("aura/status/fan_rpm", (int)fan_get_rpm());
-    }
+    delay(1000);
 }

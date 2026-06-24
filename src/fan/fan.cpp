@@ -1,62 +1,55 @@
-#include "../config.h"
 #include "fan.h"
+#include "../config.h"
+#include "Particle.h"
 
-static int currentSpeed = 255;
-static FanMode currentMode = FAN_OFF;
+volatile uint16_t Fan::_pulseCount = 0;
 
-static volatile unsigned long tachPulses = 0;
-
-static void tachISR() {
-    tachPulses++;
-}
-
-void fan_init() {
+void Fan::init() {
     pinMode(PIN_FAN_PWM, OUTPUT);
-    pinMode(PIN_FAN_TACH, INPUT_PULLUP);
-
-    analogWrite(PIN_FAN_PWM, 255); // off
-    attachInterrupt(PIN_FAN_TACH, tachISR, FALLING);
-
-    Log.info("Fan initialized");
+    pinMode(PIN_FAN_FG, INPUT_PULLUP);
+    attachInterrupt(PIN_FAN_FG, _isr, FALLING);
 }
 
-void fan_set_speed(int speed) {
-    if (speed < 0) speed = 0;
-    if (speed > 255) speed = 255;
-    currentMode = FAN_CUSTOM;
-    currentSpeed = speed;
-    analogWrite(PIN_FAN_PWM, speed);
-    Log.info("Fan custom: PWM=%d", speed);
+void Fan::setSpeed(uint8_t pct) {
+    if (pct > 100) pct = 100;
+    _speedPct = pct;
+
+    // PWM is inverted: 0 = full speed, 80 = stopped
+    // Quadratic curve compensates for logarithmic RPM response
+    // 100% speed -> PWM 0, 50% speed -> PWM 20, 0% speed -> PWM 80
+    uint8_t pwm = (uint32_t)(100 - pct) * (100 - pct) * 80 / 10000;
+    analogWrite(PIN_FAN_PWM, pwm);
 }
 
-void fan_set_mode(FanMode mode) {
-    if (mode > FAN_CUSTOM) return;
-    currentMode = mode;
-    currentSpeed = fanModeToPWM(mode);
-    analogWrite(PIN_FAN_PWM, currentSpeed);
-    Log.info("Fan mode: %d (PWM=%d)", mode, currentSpeed);
+uint8_t Fan::getSpeed() const {
+    return _speedPct;
 }
 
-int fan_get_speed() {
-    return currentSpeed;
+uint16_t Fan::getRPM() const {
+    return _rpm;
 }
 
-FanMode fan_get_mode() {
-    return currentMode;
+void Fan::setEnabled(bool enabled) {
+    _enabled = enabled;
+    if (!enabled) {
+        analogWrite(PIN_FAN_PWM, 255);
+    } else {
+        setSpeed(_speedPct);
+    }
 }
 
-float fan_get_rpm() {
-    static unsigned long lastTime = 0;
+void Fan::tick() {
     unsigned long now = millis();
-    unsigned long elapsed = now - lastTime;
-    if (elapsed < 1000) return -1;
+    unsigned long dt = now - _lastTick;
+    _lastTick = now;
 
-    noInterrupts();
-    unsigned long count = tachPulses;
-    tachPulses = 0;
-    interrupts();
+    // RPM = (pulses / 2 pulses-per-rev) * (60000 ms-per-min / dt ms)
+    if (dt > 0) {
+        _rpm = (uint32_t)_pulseCount * 30000 / dt;
+    }
+    _pulseCount = 0;
+}
 
-    float rpm = (count * 60000.0) / (elapsed * 2);
-    lastTime = now;
-    return rpm;
+void Fan::_isr() {
+    _pulseCount++;
 }
