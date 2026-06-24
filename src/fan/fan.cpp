@@ -8,6 +8,8 @@ void Fan::init() {
     pinMode(PIN_FAN_PWM, OUTPUT);
     pinMode(PIN_FAN_FG, INPUT_PULLUP);
     attachInterrupt(PIN_FAN_FG, _isr, FALLING);
+
+    setSpeed(35);
 }
 
 void Fan::setSpeed(uint8_t pct) {
@@ -43,11 +45,11 @@ void Fan::tick() {
     unsigned long dt = now - _lastTick;
     _lastTick = now;
 
-    // RPM = (pulses / 2 pulses-per-rev) * (60000 ms-per-min / dt ms)
+    uint16_t pulses = __atomic_exchange_n(&_pulseCount, 0, __ATOMIC_RELAXED);
+
     if (dt > 0) {
-        _rpm = (uint32_t)_pulseCount * 30000 / dt;
+        _rpm = (uint32_t)pulses * 30000 / dt;
     }
-    _pulseCount = 0;
 }
 
 void Fan::_isr() {
