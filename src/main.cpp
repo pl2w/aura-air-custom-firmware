@@ -34,8 +34,8 @@ void setup() {
 }
 
 void loop() {
-    auto cover = coverRead();
-    fan.setEnabled(cover.closed);
+    auto coverClosed = coverRead();
+    fan.setEnabled(coverClosed);
 
     static unsigned long lastLog = 0;
     if (millis() - lastLog >= 5000) {
@@ -51,11 +51,11 @@ void loop() {
                 fan.getRPM(), hdc.temperature, hdc.humidity,
                 sgp30.isWarmedUp() ? "" : "(warming) ",
                 sgp.tvoc, sgp.eco2, co.voltage,
-                cover.closed ? "closed" : "OPEN");
+                coverClosed ? "closed" : "OPEN");
         } else if (hdc.valid) {
             Log.info("Fan: %u RPM | %.1f°C %.0f%% RH | Cover: %s",
                 fan.getRPM(), hdc.temperature, hdc.humidity,
-                cover.closed ? "closed" : "OPEN");
+                coverClosed ? "closed" : "OPEN");
         } else {
             Log.warn("HDC1080 read failed");
         }

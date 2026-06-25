@@ -7,8 +7,6 @@ bool coverInit() {
     return true;
 }
 
-CoverState coverRead() {
-    CoverState s;
-    s.closed = (digitalRead(PIN_COVER_SW) == LOW);
-    return s;
+bool coverRead() {
+    return digitalRead(PIN_COVER_SW) == LOW;
 }
