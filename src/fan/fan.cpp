@@ -8,13 +8,14 @@ void Fan::init() {
     pinMode(PIN_FAN_PWM, OUTPUT);
     pinMode(PIN_FAN_FG, INPUT_PULLUP);
     attachInterrupt(PIN_FAN_FG, _isr, FALLING);
-
-    setSpeed(35);
+    _enabled = true;
 }
 
 void Fan::setSpeed(uint8_t pct) {
     if (pct > 100) pct = 100;
     _speedPct = pct;
+
+    if (!_enabled) return;  // just save, don't spin
 
     // PWM is inverted: 0 = full speed, 80 = stopped
     // Quadratic curve compensates for logarithmic RPM response
@@ -31,15 +32,6 @@ uint16_t Fan::getRPM() const {
     return _rpm;
 }
 
-void Fan::setEnabled(bool enabled) {
-    _enabled = enabled;
-    if (!enabled) {
-        analogWrite(PIN_FAN_PWM, 255);
-    } else {
-        setSpeed(_speedPct);
-    }
-}
-
 void Fan::tick() {
     unsigned long now = millis();
     unsigned long dt = now - _lastTick;
@@ -48,10 +40,24 @@ void Fan::tick() {
     uint16_t pulses = __atomic_exchange_n(&_pulseCount, 0, __ATOMIC_RELAXED);
 
     if (dt > 0) {
-        _rpm = (uint32_t)pulses * 30000 / dt;
+        _rpm = ((uint32_t)pulses * 30000UL) / dt;
+    }
+}
+
+void Fan::setEnabled(bool enabled) {
+    if (enabled) {
+        _enabled = true;
+        uint8_t target = _speedPct > 0 ? _speedPct : _lastSpeed;
+        _lastSpeed = target;
+        setSpeed(target);  // writes PWM since _enabled is true
+    } else {
+        _lastSpeed = _speedPct > 0 ? _speedPct : 40;
+        _enabled = false;
+        _speedPct = 0;
+        analogWrite(PIN_FAN_PWM, 80);  // stop
     }
 }
 
 void Fan::_isr() {
-    _pulseCount++;
+    __atomic_fetch_add(&_pulseCount, 1, __ATOMIC_RELAXED);
 }

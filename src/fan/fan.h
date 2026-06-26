@@ -15,8 +15,9 @@ private:
     static void _isr();
     static volatile uint16_t _pulseCount;
 
+    bool _enabled = false;
     uint8_t _speedPct = 0;
+    uint8_t _lastSpeed = 40;
     uint16_t _rpm = 0;
-    bool _enabled = true;
     unsigned long _lastTick = 0;
 };

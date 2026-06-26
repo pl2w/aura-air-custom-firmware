@@ -8,5 +8,5 @@ bool coverInit() {
 }
 
 bool coverRead() {
-    return digitalRead(PIN_COVER_SW) == LOW;
+    return digitalRead(PIN_COVER_SW) == HIGH;
 }

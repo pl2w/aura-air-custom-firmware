@@ -2,6 +2,9 @@
 *.der
 *.pem
 
+# User secrets
+secrets.h
+
 # Ignore build results and bundles
 *.bin
 *.zip
