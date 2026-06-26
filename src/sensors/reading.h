@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include "hdc1080.h"
 #include "sgp30.h"
+#include "zph02.h"
 
 struct SensorReading {
     HDC1080Reading hdc;
@@ -11,6 +12,7 @@ struct SensorReading {
     uint8_t fanSpeedPct;
     bool uvcOn;
     bool ionizerOn;
+    ZPH02Reading zph;
 };
 
 struct SensorMeta {
@@ -30,6 +32,7 @@ static const SensorMeta SENSOR_DISCOVERY[] = {
     {"fan",          "fan",      "Air Purifier","\"command_topic\":\"aura/command/fan_power\",\"percentage_command_topic\":\"aura/command/fan_speed\",\"percentage_state_topic\":\"aura/sensors\",\"percentage_value_template\":\"{{value_json.fan_speed}}\",\"state_value_template\":\"{{value_json.fan_state}}\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"icon\":\"mdi:fan\""},
     {"switch",       "uvc",      "UVC LED",    "\"command_topic\":\"aura/command/uvc\",\"state_topic\":\"aura/sensors\",\"value_template\":\"{{value_json.uvc}}\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"icon\":\"mdi:led-outline\""},
     {"switch",       "ionizer",  "Ionizer",    "\"command_topic\":\"aura/command/ionizer\",\"state_topic\":\"aura/sensors\",\"value_template\":\"{{value_json.ionizer}}\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"icon\":\"mdi:plus-circle-outline\""},
+    {"sensor",       "pm25",     "PM2.5",      "\"device_class\":\"pm25\",\"unit_of_measurement\":\"µg/m³\",\"icon\":\"mdi:blur\",\"value_template\":\"{{value_json.pm25}}\""},
 };
 
 static const size_t SENSOR_DISCOVERY_COUNT = sizeof(SENSOR_DISCOVERY) / sizeof(SENSOR_DISCOVERY[0]);

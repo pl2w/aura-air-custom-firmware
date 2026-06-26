@@ -4,6 +4,7 @@
 #include "sensors/hdc1080.h"
 #include "sensors/sgp30.h"
 #include "sensors/cover.h"
+#include "sensors/zph02.h"
 #include "sensors/reading.h"
 #include "mqtt/mqtt_client.h"
 #include "led/status_led.h"
@@ -43,8 +44,9 @@ void setup() {
     hdc1080Init();
     sgp30.init();
     coverInit();
+    zph02Init();  // takes Serial1 on D2/D3
     uvcLedInit();
-    ionizerInit();
+    ionizerInit();  // D2 shared with ZPH02 — may not control pin
 
     fan.init();
     fan.setSpeed(40);
@@ -71,6 +73,7 @@ void loop() {
         r.coverOpen = coverRead();
         r.uvcOn = uvcLedIsOn();
         r.ionizerOn = ionizerIsOn();
+        r.zph = zph02Read();
         r.fanRpm = fan.getRPM();
         r.fanSpeedPct = fan.getSpeed();
 
@@ -83,6 +86,10 @@ void loop() {
         }
 
         Log.info("Fan RPM: %u, Cover: %s", r.fanRpm, r.coverOpen ? "open" : "closed");
+
+        if (r.zph.valid) {
+            Log.info("PM2.5: %u ug/m3", r.zph.pm25);
+        }
 
         mqttClient.publishSensors(r);
     }

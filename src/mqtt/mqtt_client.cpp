@@ -33,7 +33,7 @@ void MQTTClient::publishSensors(const SensorReading& r) {
     
     char payload[256];
     snprintf(payload, sizeof(payload),
-        "{\"temperature\":%.2f,\"humidity\":%.2f,\"eco2\":%d,\"tvoc\":%d,\"fan_rpm\":%u,\"fan_speed\":%u,\"fan_state\":\"%s\",\"cover_open\":%s,\"uvc\":\"%s\",\"ionizer\":\"%s\"}",
+        "{\"temperature\":%.2f,\"humidity\":%.2f,\"eco2\":%d,\"tvoc\":%d,\"fan_rpm\":%u,\"fan_speed\":%u,\"fan_state\":\"%s\",\"cover_open\":%s,\"uvc\":\"%s\",\"ionizer\":\"%s\",\"pm25\":%u}",
         r.hdc.valid ? r.hdc.temperature : -1,
         r.hdc.valid ? r.hdc.humidity : -1,
         r.sgp.valid ? r.sgp.eco2 : -1,
@@ -43,7 +43,8 @@ void MQTTClient::publishSensors(const SensorReading& r) {
         r.fanSpeedPct > 0 ? "ON" : "OFF",
         r.coverOpen ? "true" : "false",
         r.uvcOn ? "ON" : "OFF",
-        r.ionizerOn ? "ON" : "OFF");
+        r.ionizerOn ? "ON" : "OFF",
+        r.zph.valid ? r.zph.pm25 : 0);
     
     _client.publish("aura/sensors", payload);
 }
