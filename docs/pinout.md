@@ -8,4 +8,4 @@
 | Fan (PB3N175B12H)          | 24     | PWM output, 0-80 (lower = faster)                      |
 | Fan FG (tachometer)        | 27     | Input, 2 pulses/rev, FALLING interrupt                 |
 | UVC LEDs                   | 25     | GPIO output, HIGH=on                                   |
-| Cover switch               | 28     | GPIO input, LOW=closed, HIGH=open                      |
+| Cover switch               | 28     | GPIO input, LOW=closed, HIGH=open                      |m

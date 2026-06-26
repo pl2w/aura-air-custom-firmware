@@ -10,6 +10,7 @@ struct SensorReading {
     bool coverOpen;
     uint8_t fanSpeedPct;
     bool uvcOn;
+    bool ionizerOn;
 };
 
 struct SensorMeta {
@@ -28,6 +29,7 @@ static const SensorMeta SENSOR_DISCOVERY[] = {
     {"binary_sensor","cover",    "Cover",       "\"device_class\":\"opening\",\"icon\":\"mdi:door-open\",\"value_template\":\"{% if value_json.cover_open %}ON{% else %}OFF{% endif %}\""},
     {"fan",          "fan",      "Air Purifier","\"command_topic\":\"aura/command/fan_power\",\"percentage_command_topic\":\"aura/command/fan_speed\",\"percentage_state_topic\":\"aura/sensors\",\"percentage_value_template\":\"{{value_json.fan_speed}}\",\"state_value_template\":\"{{value_json.fan_state}}\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"icon\":\"mdi:fan\""},
     {"switch",       "uvc",      "UVC LED",    "\"command_topic\":\"aura/command/uvc\",\"state_topic\":\"aura/sensors\",\"value_template\":\"{{value_json.uvc}}\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"icon\":\"mdi:led-outline\""},
+    {"switch",       "ionizer",  "Ionizer",    "\"command_topic\":\"aura/command/ionizer\",\"state_topic\":\"aura/sensors\",\"value_template\":\"{{value_json.ionizer}}\",\"payload_on\":\"ON\",\"payload_off\":\"OFF\",\"icon\":\"mdi:plus-circle-outline\""},
 };
 
 static const size_t SENSOR_DISCOVERY_COUNT = sizeof(SENSOR_DISCOVERY) / sizeof(SENSOR_DISCOVERY[0]);

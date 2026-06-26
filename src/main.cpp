@@ -8,6 +8,7 @@
 #include "mqtt/mqtt_client.h"
 #include "led/status_led.h"
 #include "led/uvc_led.h"
+#include "ionizer/ionizer.h"
 #include "config.h"
 
 SYSTEM_MODE(AUTOMATIC);
@@ -34,11 +35,16 @@ void onUvcCommand(bool on) {
     uvcLedSet(on);
 }
 
+void onIonizerCommand(bool on) {
+    ionizerSet(on);
+}
+
 void setup() {
     hdc1080Init();
     sgp30.init();
     coverInit();
     uvcLedInit();
+    ionizerInit();
 
     fan.init();
     fan.setSpeed(40);
@@ -46,6 +52,7 @@ void setup() {
     mqttClient.onFanSpeed(onFanSpeedCommand);
     mqttClient.onFanPower(onFanPowerCommand);
     mqttClient.onUvcCommand(onUvcCommand);
+    mqttClient.onIonizerCommand(onIonizerCommand);
     mqttClient.init();
 }
 
@@ -63,6 +70,7 @@ void loop() {
         r.sgp = sgp30.read();
         r.coverOpen = coverRead();
         r.uvcOn = uvcLedIsOn();
+        r.ionizerOn = ionizerIsOn();
         r.fanRpm = fan.getRPM();
         r.fanSpeedPct = fan.getSpeed();
 

@@ -12,6 +12,7 @@ public:
     void onFanSpeed(void (*callback)(uint8_t speed));
     void onFanPower(void (*callback)(bool on));
     void onUvcCommand(void (*callback)(bool on));
+    void onIonizerCommand(void (*callback)(bool on));
 
 private:
     static void _callback(char* topic, uint8_t* payload, unsigned int len);

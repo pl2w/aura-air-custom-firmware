@@ -4,7 +4,7 @@
 #include "../config.h"
 #include "MQTT.h"
 #include "mqtt_client.h"
-#include "../sensors/reading.h" // for SensorReading, SENSOR_DISCOVERY
+#include "../sensors/reading.h"
 #include "Particle.h"
 
 static void _onMessage(char* topic, uint8_t* payload, unsigned int length);
@@ -33,7 +33,7 @@ void MQTTClient::publishSensors(const SensorReading& r) {
     
     char payload[256];
     snprintf(payload, sizeof(payload),
-        "{\"temperature\":%.2f,\"humidity\":%.2f,\"eco2\":%d,\"tvoc\":%d,\"fan_rpm\":%u,\"fan_speed\":%u,\"fan_state\":\"%s\",\"cover_open\":%s,\"uvc\":\"%s\"}",
+        "{\"temperature\":%.2f,\"humidity\":%.2f,\"eco2\":%d,\"tvoc\":%d,\"fan_rpm\":%u,\"fan_speed\":%u,\"fan_state\":\"%s\",\"cover_open\":%s,\"uvc\":\"%s\",\"ionizer\":\"%s\"}",
         r.hdc.valid ? r.hdc.temperature : -1,
         r.hdc.valid ? r.hdc.humidity : -1,
         r.sgp.valid ? r.sgp.eco2 : -1,
@@ -42,7 +42,8 @@ void MQTTClient::publishSensors(const SensorReading& r) {
         r.fanSpeedPct,
         r.fanSpeedPct > 0 ? "ON" : "OFF",
         r.coverOpen ? "true" : "false",
-        r.uvcOn ? "ON" : "OFF");
+        r.uvcOn ? "ON" : "OFF",
+        r.ionizerOn ? "ON" : "OFF");
     
     _client.publish("aura/sensors", payload);
 }
@@ -62,6 +63,7 @@ void MQTTClient::_connect() {
         _client.subscribe("aura/command/fan_speed");
         _client.subscribe("aura/command/fan_power");
         _client.subscribe("aura/command/uvc");
+        _client.subscribe("aura/command/ionizer");
         _publishDiscovery();
     } else {
         Log.info("MQTT connection failed");
@@ -94,6 +96,7 @@ void MQTTClient::_publishDiscovery() {
 static void (*_fanSpeedHandler)(uint8_t) = nullptr;
 static void (*_fanPowerHandler)(bool) = nullptr;
 static void (*_uvcHandler)(bool) = nullptr;
+static void (*_ionizerHandler)(bool) = nullptr;
 
 void MQTTClient::onFanSpeed(void (*cb)(uint8_t)) {
     _fanSpeedHandler = cb;
@@ -105,6 +108,10 @@ void MQTTClient::onFanPower(void (*cb)(bool)) {
 
 void MQTTClient::onUvcCommand(void (*cb)(bool)) {
     _uvcHandler = cb;
+}
+
+void MQTTClient::onIonizerCommand(void (*cb)(bool)) {
+    _ionizerHandler = cb;
 }
 
 void _onMessage(char* topic, uint8_t* payload, unsigned int length) {
@@ -127,6 +134,12 @@ void _onMessage(char* topic, uint8_t* payload, unsigned int length) {
     if (strcmp(topic, "aura/command/uvc") == 0) {
         if (_uvcHandler) {
             _uvcHandler(length == 2 && payload[0] == 'O' && payload[1] == 'N');
+        }
+        return;
+    }
+    if (strcmp(topic, "aura/command/ionizer") == 0) {
+        if (_ionizerHandler) {
+            _ionizerHandler(length == 2 && payload[0] == 'O' && payload[1] == 'N');
         }
         return;
     }
