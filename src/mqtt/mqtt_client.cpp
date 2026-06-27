@@ -33,18 +33,30 @@ void MQTTClient::publishSensors(const SensorReading& r) {
     
     char payload[256];
     snprintf(payload, sizeof(payload),
-        "{\"temperature\":%.2f,\"humidity\":%.2f,\"eco2\":%d,\"tvoc\":%d,\"fan_rpm\":%u,\"fan_speed\":%u,\"fan_state\":\"%s\",\"cover_open\":%s,\"uvc\":\"%s\",\"ionizer\":\"%s\",\"pm25\":%u}",
-        r.hdc.valid ? r.hdc.temperature : -1,
-        r.hdc.valid ? r.hdc.humidity : -1,
+        "{"
+        "\"temperature\":%.2f,"
+        "\"humidity\":%.2f,"
+        "\"eco2\":%d,"
+        "\"tvoc\":%d,"
+        "\"fan_rpm\":%u,"
+        "\"fan_speed\":%u,"
+        "\"fan_state\":\"%s\","
+        "\"cover_open\":%s,"
+        "\"uvc\":\"%s\","
+        "\"ionizer\":\"%s\","
+        "\"pm25\":%u"
+        "}",
+        r.hdc.valid ? r.hdc.temperature : -1.0f,
+        r.hdc.valid ? r.hdc.humidity    : -1.0f,
         r.sgp.valid ? r.sgp.eco2 : -1,
         r.sgp.valid ? r.sgp.tvoc : -1,
         r.fanRpm,
         r.fanSpeedPct,
         r.fanSpeedPct > 0 ? "ON" : "OFF",
-        r.coverOpen ? "true" : "false",
-        r.uvcOn ? "ON" : "OFF",
-        r.ionizerOn ? "ON" : "OFF",
-        r.zph.valid ? r.zph.pm25 : 0);
+        r.coverOpen  ? "true" : "false",
+        r.uvcOn      ? "ON"   : "OFF",
+        r.ionizerOn  ? "ON"   : "OFF",
+        r.zph.valid  ? r.zph.pm25 : 0);
     
     _client.publish("aura/sensors", payload);
 }
@@ -126,18 +138,21 @@ void _onMessage(char* topic, uint8_t* payload, unsigned int length) {
         }
         return;
     }
+
     if (strcmp(topic, "aura/command/fan_power") == 0) {
         if (_fanPowerHandler) {
             _fanPowerHandler(length == 2 && payload[0] == 'O' && payload[1] == 'N');
         }
         return;
     }
+
     if (strcmp(topic, "aura/command/uvc") == 0) {
         if (_uvcHandler) {
             _uvcHandler(length == 2 && payload[0] == 'O' && payload[1] == 'N');
         }
         return;
     }
+
     if (strcmp(topic, "aura/command/ionizer") == 0) {
         if (_ionizerHandler) {
             _ionizerHandler(length == 2 && payload[0] == 'O' && payload[1] == 'N');

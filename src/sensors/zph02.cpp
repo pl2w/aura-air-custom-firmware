@@ -41,8 +41,9 @@ ZPH02Reading zph02Read() {
         }
     }
 
-    if (_zph02Valid && millis() - _lastPacket > ZPH02_TIMEOUT) {
+    if (millis() - _lastPacket > ZPH02_TIMEOUT) {
         _zph02Valid = false;
+        _bufPos = 0;
     }
 
     return { _zph02Valid, _zph02Pm25 };

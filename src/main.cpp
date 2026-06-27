@@ -7,7 +7,6 @@
 #include "sensors/zph02.h"
 #include "sensors/reading.h"
 #include "mqtt/mqtt_client.h"
-#include "led/status_led.h"
 #include "led/uvc_led.h"
 #include "ionizer/ionizer.h"
 #include "config.h"
@@ -44,9 +43,9 @@ void setup() {
     hdc1080Init();
     sgp30.init();
     coverInit();
-    zph02Init();  // takes Serial1 on D2/D3
+    zph02Init();
     uvcLedInit();
-    ionizerInit();  // D2 shared with ZPH02 — may not control pin
+    ionizerInit();
 
     fan.init();
     fan.setSpeed(40);
@@ -94,15 +93,15 @@ void loop() {
         mqttClient.publishSensors(r);
     }
 
-    if (baselineTimer.ready() && sgp30.isWarmedUp()) {
-        auto baseline = sgp30.getBaseline();
-        if (baseline.valid) {
-            EEPROM.put(EEPROM_ADDR_MAGIC, (uint16_t)0xBEEF);
-            EEPROM.put(EEPROM_ADDR_ECO2, baseline.eco2);
-            EEPROM.put(EEPROM_ADDR_TVOC, baseline.tvoc);
-            Log.info("SGP30 baseline saved: eCO2=%u TVOC=%u", baseline.eco2, baseline.tvoc);
-        }
-    }
+    //if (baselineTimer.ready() && sgp30.isWarmedUp()) {
+    //    auto baseline = sgp30.getBaseline();
+    //    if (baseline.valid) {
+    //        EEPROM.put(EEPROM_ADDR_MAGIC, (uint16_t)0xBEEF);
+    //        EEPROM.put(EEPROM_ADDR_ECO2, baseline.eco2);
+    //        EEPROM.put(EEPROM_ADDR_TVOC, baseline.tvoc);
+    //        Log.info("SGP30 baseline saved: eCO2=%u TVOC=%u", baseline.eco2, baseline.tvoc);
+    //    }
+    //}
 
     mqttClient.loop();
 }

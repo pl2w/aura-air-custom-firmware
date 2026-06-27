@@ -32,15 +32,15 @@ bool SGP30::init() {
 
     _startTime = millis();
 
-    uint16_t magic;
-    EEPROM.get(EEPROM_ADDR_MAGIC, magic);
-    if (magic == 0xBEEF) {
-        uint16_t eco2base, tvocbase;
-        EEPROM.get(EEPROM_ADDR_ECO2, eco2base);
-        EEPROM.get(EEPROM_ADDR_TVOC, tvocbase);
-        setBaseline(eco2base, tvocbase);
-        Log.info("SGP30 baseline restored: eCO2=%u TVOC=%u", eco2base, tvocbase);
-    }
+    //uint16_t magic;
+    //EEPROM.get(EEPROM_ADDR_MAGIC, magic);
+    //if (magic == 0xBEEF) {
+    //    uint16_t eco2base, tvocbase;
+    //    EEPROM.get(EEPROM_ADDR_ECO2, eco2base);
+    //    EEPROM.get(EEPROM_ADDR_TVOC, tvocbase);
+    //    setBaseline(eco2base, tvocbase);
+    //    Log.info("SGP30 baseline restored: eCO2=%u TVOC=%u", eco2base, tvocbase);
+    //}
 
     return true;
 }
